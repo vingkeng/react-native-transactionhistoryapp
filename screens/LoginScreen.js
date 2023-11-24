@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, Button } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication'
 import Authentication from '../utils/Authentication'
 
-const DetailsScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation }) => {
 
     // wherever the useState is located 
     const [isBiometricSupported, setIsBiometricSupported] = React.useState(false);
@@ -61,9 +61,9 @@ const DetailsScreen = ({ navigation }) => {
             <StatusBar style="auto" />
         </View>
     );
-}
+};
 
-export default DetailsScreen
+export default LoginScreen;
 
 const styles = StyleSheet.create({
     container: {

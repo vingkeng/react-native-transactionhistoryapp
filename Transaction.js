@@ -8,7 +8,6 @@ class Transaction {
         this.amount = amount;
         this.desc = desc;
         this.type = type;
-        this.key = id
     }
 
     // Convert instance to JSON
@@ -20,7 +19,6 @@ class Transaction {
             amount: this.amount,
             desc: this.desc,
             type: this.type,
-            key: this.key,
         });
     }
 

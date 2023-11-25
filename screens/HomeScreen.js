@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import UUID from 'react-native-uuid';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Authentication from '../utils/Authentication'
+import Utils from '../utils/Utils'
 
 const HomeScreen = ({ navigation }) => {
     let STORAGE_KEY = "transdata"
@@ -44,7 +45,7 @@ const HomeScreen = ({ navigation }) => {
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
             setDataFromDatabase(updatedData)
             setIsLoading(false);
-            console.log('updatedData ' + updatedData.length)
+            // console.log('updatedData ' + updatedData.length)
         } catch (error) {
             console.error('Error storing data:', error);
             setIsLoading(false);
@@ -55,7 +56,7 @@ const HomeScreen = ({ navigation }) => {
         setIsLoading(true);
         try {
             const jsonArrayString = await AsyncStorage.getItem(STORAGE_KEY);
-            console.log('getdata = ' + jsonArrayString);
+            // console.log('getdata = ' + jsonArrayString);
             if (jsonArrayString == null) {
                 setIsLoading(false);
                 return [];
@@ -86,9 +87,16 @@ const HomeScreen = ({ navigation }) => {
         const randomTrans = [];
 
         for (let i = 1; i <= 20; i++) {
-            const randomAmount = Math.floor(Math.random() * 100) + 1; // Random amount between 1 and 80
-            const randomNumber = Math.random().toString().substr(2, 16);
-            const randomTran = new Transaction(UUID.v4(), randomNumber, getCurrentDateTime(), randomAmount, 'desc', (Math.random() < 0.5 ? 'credit' : 'debit'));
+            const randomAmount = Math.floor(Math.random() * 100) + 1; // Random amount between 1 and 100
+            const randomNumber = (Math.random() + ' ').substring(2, 10) + (Math.random() + ' ').substring(2, 10);
+            const randomTran = new Transaction(
+                UUID.v4(),
+                randomNumber,
+                getCurrentDateTime(),
+                randomAmount,
+                generateRandomSentence(Math.floor(Math.random() * 15) + 1),
+                (Math.random() < 0.5 ? 'Credit' : 'Debit')
+            );
 
             // Add the random trans to the front of the array
             randomTrans.unshift(randomTran);
@@ -116,16 +124,27 @@ const HomeScreen = ({ navigation }) => {
         return formattedDateTime;
     };
 
-    function mask16Digits(number) {
-        // Check if the input is a valid 16-digit number
-        if (!/^\d{16}$/.test(number)) {
-            return '';
+    function generateRandomWord(length) {
+        const characters = 'abcdefghijklmnopqrstuvwxyz';
+        let randomWord = '';
+
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            randomWord += characters[randomIndex];
         }
 
-        // Mask the number, excluding the first and last 4 digits
-        const maskedNumber = number.substr(0, 4) + '*'.repeat(8) + number.substr(-4);
+        return randomWord;
+    }
 
-        return maskedNumber;
+    function generateRandomSentence(wordCount) {
+        const words = [];
+        for (let i = 0; i < wordCount; i++) {
+            const wordLength = Math.floor(Math.random() * 10) + 1
+            const randomWord = generateRandomWord(wordLength);
+            words.push(randomWord);
+        }
+
+        return words.join(' ');
     }
 
     useLayoutEffect(() => {
@@ -149,7 +168,7 @@ const HomeScreen = ({ navigation }) => {
                         })
                     }} >
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Icon name="fingerprint" size={25} color="blue" />
+                            <Icon name="fingerprint" size={25} color="#1877F2" />
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -176,11 +195,9 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => handleTransactionPress(item)}>
             <View style={styles.itemContainer}>
                 <Text>ID: {item.id}</Text>
-                <Text>{isAuthenticated ? item.cardNumber : mask16Digits(item.cardNumber)}</Text>
+                <Text>{item.type} {isAuthenticated ? item.cardNumber : Utils.mask16Digits(item.cardNumber)}</Text>
                 <Text>Date time: {item.datetime}</Text>
                 <Text>Amount: ${item.amount}</Text>
-                <Text>Description: {item.desc}</Text>
-                <Text>Type: {item.type}</Text>
             </View>
         </TouchableOpacity>
     );
@@ -190,6 +207,7 @@ const HomeScreen = ({ navigation }) => {
         console.log('Selected transaction:', transaction);
         navigation.navigate('Details', {
             data: transaction,
+            isAuthenticated: isAuthenticated
         });
     };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, FlatList, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Button, FlatList, ActivityIndicator, Alert, TouchableOpacity, RefreshControl } from 'react-native';
 import { } from '@react-navigation/native';
 import Modal from 'react-native-modal';
 import Transaction from '../Transaction';
@@ -16,6 +16,7 @@ const HomeScreen = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [dataFromDatabase, setDataFromDatabase] = useState([]);
     const [isAuthenticated, setisAuthenticated] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     const createClearAlert = () =>
         Alert.alert('Clear items', 'Confirm clear all items?', [
@@ -211,25 +212,19 @@ const HomeScreen = ({ navigation }) => {
         });
     };
 
+    const refreshData = async () => {
+        setRefreshing(true);
+        const existingData = await getData()
+        setDataFromDatabase(existingData)
+        setRefreshing(false);
+    };
+
     return (
         <View style={styles.container}>
 
             <Text>
                 Total transactions: {dataFromDatabase.length == null ? 0 : dataFromDatabase.length}
             </Text>
-            {/* <View style={[{ width: "75%", alignItems: 'center' }]}>
-                {dataFromDatabase.length == 0 ? (
-                    <Text>Empty!</Text>
-                ) : null
-                }
-            </View> */}
-
-            {/* <View style={[{ width: "75%" }]}>
-                <Button
-                    title='Details'
-                    onPress={() => navigation.navigate('Details')}>
-                </Button>
-            </View> */}
 
             <FlatList
                 style={[{
@@ -239,6 +234,12 @@ const HomeScreen = ({ navigation }) => {
                 data={dataFromDatabase}
                 renderItem={renderItem}
                 keyExtractor={(item, index) => { return item.id }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={refreshData}
+                    />
+                }
             />
 
             <View style={[{
